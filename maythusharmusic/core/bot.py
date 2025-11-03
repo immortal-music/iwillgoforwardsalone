@@ -1,8 +1,18 @@
 import uvloop
+import asyncio  # asyncio ကို import လုပ်ပါ
 
+# uvloop policy ကို install လုပ်ပါ
 uvloop.install()
 
-import asyncio
+# pyrogram ကို import မလုပ်ခင် event loop အသစ်ဖန်တီးပြီး set လုပ်ပါ
+try:
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    asyncio.set_event_loop(loop)
+except RuntimeError:
+    # Loop က ရှိပြီးသားဖြစ်နေရင် (safe side)
+    pass
+
+# --- အခုမှ pyrogram နဲ့ ကျန်တာတွေကို import လုပ်ပါ ---
 from pyrogram import Client, errors
 from pyrogram.enums import ChatMemberStatus, ParseMode
 
