@@ -1,4 +1,4 @@
-FROM nikolaik/python-nodejs:python3.11-nodejs24
+FROM nikolaik/python-nodejs:python3.10-nodejs19
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ffmpeg ca-certificates gnupg \
