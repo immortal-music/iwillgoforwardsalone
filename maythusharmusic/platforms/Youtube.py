@@ -21,25 +21,15 @@ import time
 #from config import API_URL, API_KEY
 
 
-def get_cookies(self):
-        if not self.checked:
-            for file in os.listdir("maythusharmusic/cookies"):
-                if file.endswith(".txt"):
-                    self.cookies.append(file)
-            self.checked = True
-        if not self.cookies:
-            return None
-        return f"maythusharmusic/cookies/{random.choice(self.cookies)}"
 
 
-
-async def check_file_size(link):
+async def check_file_size(link, cookie_arg):
     async def get_format_info(link):
+        # --cookie argument ကို ထည့်သွင်းပါ
+        cmd_args = ["yt-dlp", "-J"] + cookie_arg + [link]
+        
         proc = await asyncio.create_subprocess_exec(
-            "yt-dlp",
-            "--cookies",get_cookies(),
-            "-J",
-            link,
+            *cmd_args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
@@ -90,6 +80,19 @@ class YouTubeAPI:
         self.status = "https://www.youtube.com/oembed?url="
         self.listbase = "https://youtube.com/playlist?list="
         self.reg = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        
+        # --- COOKIE HANDLING ---
+        self.cookie_file_path = "cookies.txt"
+        self.cookie_arg = []  # For subprocess
+        self.cookie_dict = {} # For Python library
+        
+        if os.path.exists(self.cookie_file_path):
+            logging.info(f"'{self.cookie_file_path}' file found. Using it for yt-dlp.")
+            self.cookie_arg = ["--cookie", self.cookie_file_path]
+            self.cookie_dict = {"cookiefile": self.cookie_file_path}
+        else:
+            logging.warning(f"'{self.cookie_file_path}' not found. yt-dlp will run without cookies.")
+        # --- END COOKIE HANDLING ---
 
     async def exists(self, link: str, videoid: Union[bool, str] = None):
         if videoid:
@@ -175,13 +178,17 @@ class YouTubeAPI:
             link = self.base + link
         if "&" in link:
             link = link.split("&")[0]
-        proc = await asyncio.create_subprocess_exec(
+        
+        # --cookie argument ကို ထည့်သွင်းပါ
+        cmd_args = [
             "yt-dlp",
-            "--cookies",get_cookies(),
             "-g",
             "-f",
             "best[height<=?720][width<=?1280]",
-            f"{link}",
+        ] + self.cookie_arg + [f"{link}"]
+
+        proc = await asyncio.create_subprocess_exec(
+            *cmd_args,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -196,8 +203,12 @@ class YouTubeAPI:
             link = self.listbase + link
         if "&" in link:
             link = link.split("&")[0]
+            
+        # --cookie argument ကို string အနေနဲ့ ထည့်သွင်းပါ
+        cookie_cmd = f"--cookie {self.cookie_file_path}" if self.cookie_arg else ""
+            
         playlist = await shell_cmd(
-            f"yt-dlp -i --get-id --flat-playlist --cookies {cookie_txt_file()} --playlist-end {limit} --skip-download {link}"
+            f"yt-dlp -i {cookie_cmd} --get-id --flat-playlist --playlist-end {limit} --skip-download {link}"
         )
         try:
             result = playlist.split("\n")
@@ -234,7 +245,10 @@ class YouTubeAPI:
             link = self.base + link
         if "&" in link:
             link = link.split("&")[0]
-        ytdl_opts = {"quiet": True, "cookiefile" : cookie_txt_file()}
+            
+        # cookie_dict ကို အသုံးပြုပါ (bug fix)
+        ytdl_opts = {"quiet": True, **self.cookie_dict}
+        
         ydl = yt_dlp.YoutubeDL(ytdl_opts)
         with ydl:
             formats_available = []
@@ -300,8 +314,8 @@ class YouTubeAPI:
         
         def audio_dl():
             try:
-                sexid = extract_video_id(link)
-                path = api_dl(sexid)
+                sexid = extract_video_id(link) # extract_video_id မရှိပါ၊ ဒါက မူလ code ထဲက error ဖြစ်နိုင်
+                path = api_dl(sexid) # api_dl မရှိပါ၊ ဒါက မူလ code ထဲက error ဖြစ်နိုင်
                 if path:
                     return path
                 else:
@@ -310,14 +324,15 @@ class YouTubeAPI:
                 print(f"API failed: {e}. Falling back to yt-dlp.")
 
             # yt-dlp fallback
+            # cookie_dict ကို ထည့်သွင်းပါ
             ydl_optssx = {
                 "format": "bestaudio/best",
                 "outtmpl": "downloads/%(id)s.%(ext)s",
                 "geo_bypass": True,
                 "nocheckcertificate": True,
                 "quiet": True,
-                "cookiefile": self.get_cookies(),
                 "no_warnings": True,
+                **self.cookie_dict, # COOKIE ထည့်သွင်း
             }
 
             try:
@@ -333,14 +348,15 @@ class YouTubeAPI:
                 return None
 
         def video_dl():
+            # cookie_dict ကို ထည့်သွင်းပါ
             ydl_optssx = {
                 "format": "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
                 "outtmpl": "downloads/%(id)s.%(ext)s",
                 "geo_bypass": True,
                 "nocheckcertificate": True,
                 "quiet": True,
-                "cookiefile": self.get_cookies(),
                 "no_warnings": True,
+                **self.cookie_dict, # COOKIE ထည့်သွင်း
             }
             x = yt_dlp.YoutubeDL(ydl_optssx)
             info = x.extract_info(link, False)
@@ -353,6 +369,7 @@ class YouTubeAPI:
         def song_video_dl():
             formats = f"{format_id}+140"
             fpath = f"downloads/{title}"
+            # cookie_dict ကို ထည့်သွင်းပါ
             ydl_optssx = {
                 "format": formats,
                 "outtmpl": fpath,
@@ -360,15 +377,16 @@ class YouTubeAPI:
                 "nocheckcertificate": True,
                 "quiet": True,
                 "no_warnings": True,
-                "cookiefile": self.get_cookies(),
                 "prefer_ffmpeg": True,
                 "merge_output_format": "mp4",
+                **self.cookie_dict, # COOKIE ထည့်သွင်း
             }
             x = yt_dlp.YoutubeDL(ydl_optssx)
             x.download([link])
 
         def song_audio_dl():
             fpath = f"downloads/{title}.%(ext)s"
+            # cookie_dict ကို ထည့်သွင်းပါ
             ydl_optssx = {
                 "format": format_id,
                 "outtmpl": fpath,
@@ -376,7 +394,6 @@ class YouTubeAPI:
                 "nocheckcertificate": True,
                 "quiet": True,
                 "no_warnings": True,
-                "cookiefile": self.get_cookies(),
                 "prefer_ffmpeg": True,
                 "postprocessors": [
                     {
@@ -385,6 +402,7 @@ class YouTubeAPI:
                         "preferredquality": "192",
                     }
                 ],
+                **self.cookie_dict, # COOKIE ထည့်သွင်း
             }
             x = yt_dlp.YoutubeDL(ydl_optssx)
             x.download([link])
@@ -402,13 +420,16 @@ class YouTubeAPI:
                 direct = True
                 downloaded_file = await loop.run_in_executor(None, video_dl)
             else:
-                proc = await asyncio.create_subprocess_exec(
+                # --cookie argument ကို ထည့်သွင်းပါ
+                cmd_args = [
                     "yt-dlp",
-                    "--cookies",cookie_txt_file(),
                     "-g",
                     "-f",
                     "best[height<=?720][width<=?1280]",
-                    f"{link}",
+                ] + self.cookie_arg + [f"{link}"]
+
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd_args,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                 )
@@ -417,16 +438,17 @@ class YouTubeAPI:
                     downloaded_file = stdout.decode().split("\n")[0]
                     direct = False
                 else:
-                   file_size = await check_file_size(link)
-                   if not file_size:
-                     print("None file Size")
-                     return
-                   total_size_mb = file_size / (1024 * 1024)
-                   if total_size_mb > 250:
-                     print(f"File size {total_size_mb:.2f} MB exceeds the 100MB limit.")
-                     return None
-                   direct = True
-                   downloaded_file = await loop.run_in_executor(None, video_dl)
+                    # check_file_size ကို cookie_arg ထည့်ပြီး ခေါ်ပါ
+                    file_size = await check_file_size(link, self.cookie_arg)
+                    if not file_size:
+                        print("None file Size")
+                        return
+                    total_size_mb = file_size / (1024 * 1024)
+                    if total_size_mb > 250:
+                        print(f"File size {total_size_mb:.2f} MB exceeds the 100MB limit.")
+                        return None
+                    direct = True
+                    downloaded_file = await loop.run_in_executor(None, video_dl)
         else:
             direct = True
             downloaded_file = await loop.run_in_executor(None, audio_dl)
