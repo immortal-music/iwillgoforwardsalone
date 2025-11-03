@@ -350,7 +350,9 @@ class YouTubeAPI:
         def video_dl():
             # cookie_dict ကို ထည့်သွင်းပါ
             ydl_optssx = {
-                "format": "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
+                # --- ဒီ format ကို ပြောင်းသုံးပါ ---
+                "format": "bestvideo[height<=?720]+bestaudio/best[height<=?720]",
+                # ------------------------------
                 "outtmpl": "downloads/%(id)s.%(ext)s",
                 "geo_bypass": True,
                 "nocheckcertificate": True,
