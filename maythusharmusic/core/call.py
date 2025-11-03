@@ -8,7 +8,9 @@ from pyrogram.types import InlineKeyboardMarkup
 from ntgcalls import TelegramServerError
 from pytgcalls import PyTgCalls
 from pytgcalls.exceptions import (
-    AlreadyJoinedError,
+    # --- START: ဒီနေရာကို ပြင်ဆင်ထားပါသည် ---
+    GroupCallAlreadyJoined, # AlreadyJoinedError အစား နာမည်အသစ် သုံးပါ
+    # --- END: ပြင်ဆင်မှု ---
     NoActiveGroupCall,
 )
 from pytgcalls.types import (
@@ -247,10 +249,6 @@ class Call(PyTgCalls):
             db[chat_id][0]["speed_path"] = out
             db[chat_id][0]["speed"] = speed
 
-    # --- START: ပြင်ဆင်မှု ---
-    # @capture_internal_err နဲ့ force_stop_stream function တစ်ခုလုံးကို 
-    # အပေါ်က speedup_stream function နဲ့ တစ်တန်းတည်းဖြစ်အောင် အပြင်ပြန်ထုတ် (unindent) လိုက်ပါပြီ
-    
     @capture_internal_err
     async def force_stop_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
@@ -265,7 +263,6 @@ class Call(PyTgCalls):
             await assistant.leave_group_call(chat_id)
         except:
             pass
-    # --- END: ပြင်ဆင်မှု ---
 
     @capture_internal_err
     async def skip_stream(
@@ -362,7 +359,9 @@ class Call(PyTgCalls):
             )
         except NoActiveGroupCall:
             raise AssistantErr(_["call_8"])
-        except AlreadyJoinedError:
+        # --- START: ဒီနေရာကို ပြင်ဆင်ထားပါသည် ---
+        except GroupCallAlreadyJoined: # AlreadyJoinedError အစား နာမည်အသစ် သုံးပါ
+        # --- END: ပြင်ဆင်မှု ---
             raise AssistantErr(_["call_9"])
         except TelegramServerError:
             raise AssistantErr(_["call_10"])
