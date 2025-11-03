@@ -18,80 +18,18 @@ import logging
 import requests
 import time
 
-from config import API_URL, API_KEY
+#from config import API_URL, API_KEY
 
-MIN_FILE_SIZE = 51200
 
-def extract_video_id(link: str) -> str:
-    patterns = [
-        r'youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=)([0-9A-Za-z_-]{11})',
-        r'youtu\.be\/([0-9A-Za-z_-]{11})',
-        r'youtube\.com\/(?:playlist\?list=[^&]+&v=|v\/)([0-9A-Za-z_-]{11})',
-        r'youtube\.com\/(?:.*\?v=|.*\/)([0-9A-Za-z_-]{11})'
-    ]
-
-    for pattern in patterns:
-        match = re.search(pattern, link)
-        if match:
-            return match.group(1)
-
-    raise ValueError("Invalid YouTube link provided.")
-    
-
-def api_dl(video_id: str) -> str | None:
-    API_URL = f"{API_URL}/download/song/{video_id}?key={API_KEY}"
-    file_path = os.path.join("downloads", f"{video_id}.mp3")
-
-    # ✅ Check if already downloaded
-    if os.path.exists(file_path):
-        print(f"{file_path} already exists. Skipping download.")
-        return file_path
-
-    try:
-        response = requests.get(API_URL, stream=True, timeout=10)
-
-        if response.status_code == 200:
-            os.makedirs("downloads", exist_ok=True)
-            with open(file_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        f.write(chunk)
-
-            # ✅ Check file size
-            file_size = os.path.getsize(file_path)
-            if file_size < MIN_FILE_SIZE:
-                print(f"Downloaded file is too small ({file_size} bytes). Removing.")
-                os.remove(file_path)
-                return None
-
-            print(f"Downloaded {file_path} ({file_size} bytes) using API key: {api_key[:10]}...")
-            return file_path
-
-        else:
-            print(f"Failed to download {video_id}. Status: {response.status_code} using API key: {API_KEY}...")
+def get_cookies(self):
+        if not self.checked:
+            for file in os.listdir("maythusharmusic/cookies"):
+                if file.endswith(".txt"):
+                    self.cookies.append(file)
+            self.checked = True
+        if not self.cookies:
             return None
-
-    except requests.RequestException as e:
-        print(f"Download error for {video_id}: {e} using API key: {api_key[:10]}...")
-        return None
-
-    except OSError as e:
-        print(f"File error for {video_id}: {e}")
-        return None
-
-
-
-
-def cookie_txt_file():
-    folder_path = f"{os.getcwd()}/cookies"
-    filename = f"{os.getcwd()}/cookies/logs.csv"
-    txt_files = glob.glob(os.path.join(folder_path, '*.txt'))
-    if not txt_files:
-        raise FileNotFoundError("No .txt files found in the specified folder.")
-    cookie_txt_file = random.choice(txt_files)
-    with open(filename, 'a') as file:
-        file.write(f'Choosen File : {cookie_txt_file}\n')
-    return f"""cookies/{str(cookie_txt_file).split("/")[-1]}"""
+        return f"maythusharmusic/cookies/{random.choice(self.cookies)}"
 
 
 
@@ -99,7 +37,7 @@ async def check_file_size(link):
     async def get_format_info(link):
         proc = await asyncio.create_subprocess_exec(
             "yt-dlp",
-            "--cookies", cookie_txt_file(),
+            "--cookies",get_cookies(),
             "-J",
             link,
             stdout=asyncio.subprocess.PIPE,
@@ -239,7 +177,7 @@ class YouTubeAPI:
             link = link.split("&")[0]
         proc = await asyncio.create_subprocess_exec(
             "yt-dlp",
-            "--cookies",cookie_txt_file(),
+            "--cookies",get_cookies(),
             "-g",
             "-f",
             "best[height<=?720][width<=?1280]",
@@ -378,7 +316,7 @@ class YouTubeAPI:
                 "geo_bypass": True,
                 "nocheckcertificate": True,
                 "quiet": True,
-                "cookiefile": cookie_txt_file(),
+                "cookiefile": self.get_cookies(),
                 "no_warnings": True,
             }
 
@@ -401,7 +339,7 @@ class YouTubeAPI:
                 "geo_bypass": True,
                 "nocheckcertificate": True,
                 "quiet": True,
-                "cookiefile" : cookie_txt_file(),
+                "cookiefile": self.get_cookies(),
                 "no_warnings": True,
             }
             x = yt_dlp.YoutubeDL(ydl_optssx)
@@ -422,7 +360,7 @@ class YouTubeAPI:
                 "nocheckcertificate": True,
                 "quiet": True,
                 "no_warnings": True,
-                "cookiefile" : cookie_txt_file(),
+                "cookiefile": self.get_cookies(),
                 "prefer_ffmpeg": True,
                 "merge_output_format": "mp4",
             }
@@ -438,7 +376,7 @@ class YouTubeAPI:
                 "nocheckcertificate": True,
                 "quiet": True,
                 "no_warnings": True,
-                "cookiefile" : cookie_txt_file(),
+                "cookiefile": self.get_cookies(),
                 "prefer_ffmpeg": True,
                 "postprocessors": [
                     {
