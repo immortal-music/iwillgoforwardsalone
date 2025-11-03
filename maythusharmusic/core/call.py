@@ -8,9 +8,7 @@ from pyrogram.types import InlineKeyboardMarkup
 from ntgcalls import TelegramServerError
 from pytgcalls import PyTgCalls
 from pytgcalls.exceptions import (
-    # --- START: ဒီနေရာကို ပြင်ဆင်ထားပါသည် ---
-    GroupCallAlreadyJoined, # AlreadyJoinedError အစား နာမည်အသစ် သုံးပါ
-    # --- END: ပြင်ဆင်မှု ---
+    AlreadyJoinedError,
     NoActiveGroupCall,
 )
 from pytgcalls.types import (
@@ -42,7 +40,6 @@ from maythusharmusic.utils.inline.play import stream_markup, stream_markup2
 from maythusharmusic.utils.stream.autoclear import auto_clean
 from maythusharmusic.utils.thumbnails import get_thumb
 from strings import get_string
-from maythusharmusic.utils.errors import capture_internal_err
 
 autoend = {}
 counter = {}
@@ -58,7 +55,7 @@ async def _clear_(chat_id):
 class Call(PyTgCalls):
     def __init__(self):
         self.userbot1 = Client(
-            name="CaiLinXAss1",
+            name="DeadlineXAss1",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING1),
@@ -66,10 +63,9 @@ class Call(PyTgCalls):
         self.one = PyTgCalls(
             self.userbot1,
             cache_duration=100,
-            preload_for_streaming=False,
         )
         self.userbot2 = Client(
-            name="CaiLinXAss2",
+            name="DeadlineXAss2",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING2),
@@ -77,10 +73,9 @@ class Call(PyTgCalls):
         self.two = PyTgCalls(
             self.userbot2,
             cache_duration=100,
-            preload_for_streaming=False,
         )
         self.userbot3 = Client(
-            name="CaiLinXAss3",
+            name="DeadlineXAss3",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING3),
@@ -88,10 +83,9 @@ class Call(PyTgCalls):
         self.three = PyTgCalls(
             self.userbot3,
             cache_duration=100,
-            preload_for_streaming=False,
         )
         self.userbot4 = Client(
-            name="CaiLinXAss4",
+            name="DeadlineXAss4",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING4),
@@ -99,10 +93,9 @@ class Call(PyTgCalls):
         self.four = PyTgCalls(
             self.userbot4,
             cache_duration=100,
-            preload_for_streaming=False,
         )
         self.userbot5 = Client(
-            name="CaiLinXAss5",
+            name="DeadlineXAss5",
             api_id=config.API_ID,
             api_hash=config.API_HASH,
             session_string=str(config.STRING5),
@@ -110,36 +103,29 @@ class Call(PyTgCalls):
         self.five = PyTgCalls(
             self.userbot5,
             cache_duration=100,
-            preload_for_streaming=False,
         )
-        
-    @capture_internal_err
+
     async def pause_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         await assistant.pause_stream(chat_id)
 
-    @capture_internal_err
     async def mute_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         await assistant.mute_stream(chat_id)
-        
-    @capture_internal_err
+
     async def unmute_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         await assistant.unmute_stream(chat_id)
 
-    @capture_internal_err
     async def get_participant(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         participant = await assistant.get_participants(chat_id)
         return participant
 
-    @capture_internal_err
     async def resume_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         await assistant.resume_stream(chat_id)
 
-    @capture_internal_err
     async def stop_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         try:
@@ -148,7 +134,6 @@ class Call(PyTgCalls):
         except:
             pass
 
-    @capture_internal_err
     async def stop_stream_force(self, chat_id: int):
         try:
             if config.STRING1:
@@ -180,7 +165,6 @@ class Call(PyTgCalls):
         except:
             pass
 
-    @capture_internal_err
     async def speedup_stream(self, chat_id: int, file_path, speed, playing):
         assistant = await group_assistant(self, chat_id)
         if str(speed) != "1.0":
@@ -249,7 +233,6 @@ class Call(PyTgCalls):
             db[chat_id][0]["speed_path"] = out
             db[chat_id][0]["speed"] = speed
 
-    @capture_internal_err
     async def force_stop_stream(self, chat_id: int):
         assistant = await group_assistant(self, chat_id)
         try:
@@ -264,7 +247,6 @@ class Call(PyTgCalls):
         except:
             pass
 
-    @capture_internal_err
     async def skip_stream(
         self,
         chat_id: int,
@@ -290,7 +272,6 @@ class Call(PyTgCalls):
             stream,
         )
 
-    @capture_internal_err
     async def seek_stream(self, chat_id, file_path, to_seek, duration, mode):
         assistant = await group_assistant(self, chat_id)
         stream = (
@@ -310,7 +291,6 @@ class Call(PyTgCalls):
         )
         await assistant.change_stream(chat_id, stream)
 
-    @capture_internal_err
     async def stream_call(self, link):
         assistant = await group_assistant(self, config.LOGGER_ID)
         await assistant.join_group_call(
@@ -320,7 +300,6 @@ class Call(PyTgCalls):
         await asyncio.sleep(0.2)
         await assistant.leave_group_call(config.LOGGER_ID)
 
-    @capture_internal_err
     async def join_call(
         self,
         chat_id: int,
@@ -359,9 +338,7 @@ class Call(PyTgCalls):
             )
         except NoActiveGroupCall:
             raise AssistantErr(_["call_8"])
-        # --- START: ဒီနေရာကို ပြင်ဆင်ထားပါသည် ---
-        except GroupCallAlreadyJoined: # AlreadyJoinedError အစား နာမည်အသစ် သုံးပါ
-        # --- END: ပြင်ဆင်မှု ---
+        except AlreadyJoinedError:
             raise AssistantErr(_["call_9"])
         except TelegramServerError:
             raise AssistantErr(_["call_10"])
@@ -378,7 +355,6 @@ class Call(PyTgCalls):
             if users == 1:
                 autoend[chat_id] = datetime.now() + timedelta(minutes=1)
 
-    @capture_internal_err
     async def change_stream(self, client, chat_id):
         check = db.get(chat_id)
         popped = None
@@ -599,7 +575,6 @@ class Call(PyTgCalls):
                     db[chat_id][0]["mystic"] = run
                     db[chat_id][0]["markup"] = "stream"
 
-    @capture_internal_err
     async def ping(self):
         pings = []
         if config.STRING1:
@@ -627,7 +602,6 @@ class Call(PyTgCalls):
         if config.STRING5:
             await self.five.start()
 
-    @capture_internal_err
     async def decorators(self):
         @self.one.on_kicked()
         @self.two.on_kicked()
