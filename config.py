@@ -29,7 +29,7 @@ ADS_MODE = getenv("ADS_MODE", None)
 LOGGER_ID = int(getenv("LOGGER_ID", None))
 
 # Get this value from @Harry_RoxBot on Telegram by /id
-OWNER_ID = int(getenv("OWNER_ID", 6848223695))
+OWNER_ID = int(getenv("OWNER_ID", 5821905026))
 
 ## Fill these variables if you're deploying on heroku.
 # Your heroku app name
@@ -39,18 +39,18 @@ HEROKU_API_KEY = getenv("HEROKU_API_KEY")
 
 UPSTREAM_REPO = getenv(
     "UPSTREAM_REPO",
-    "https://github.com/DeadlineTech/music",
+    "https://github.com/immortal-music/iwillgoforwardsalone",
 )
 UPSTREAM_BRANCH = getenv("UPSTREAM_BRANCH", "master")
 GIT_TOKEN = getenv(
     "GIT_TOKEN", None
 )  # Fill this variable if your upstream repository is private
 
-SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/DeadlineTechTeam")
-SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/DeadlineTechsupport")
+SUPPORT_CHANNEL = getenv("SUPPORT_CHANNEL", "https://t.me/sasukevipmusicbotsupport")
+SUPPORT_CHAT = getenv("SUPPORT_CHAT", "https://t.me/sasukemusicsupportchat")
 
 # Set this to True if you want the assistant to automatically leave chats after an interval
-AUTO_LEAVING_ASSISTANT = bool(getenv("AUTO_LEAVING_ASSISTANT", True))
+AUTO_LEAVING_ASSISTANT = bool(getenv("AUTO_LEAVING_ASSISTANT", False))
 
 
 # Get this credentials from https://developer.spotify.com/dashboard
@@ -85,21 +85,21 @@ confirmer = {}
 
 
 START_IMG_URL = getenv(
-    "START_IMG_URL", "https://telegra.ph/file/1557a544d9b4f051f99c7-57891fa1d7578f5b79.jpg"
+    "START_IMG_URL", "https://files.catbox.moe/q9szy4.jpg"
 )
 PING_IMG_URL = getenv(
-    "PING_IMG_URL", "https://telegra.ph/file/9f9bde8939034b95f3e59-a0d7a8216c1faccd19.jpg"
+    "PING_IMG_URL", "https://files.catbox.moe/q9szy4.jpg"
 )
-PLAYLIST_IMG_URL = "https://telegra.ph/file/1927a41b14896327ca2ea-662f7988e42d3d7ec5.jpg"
-STATS_IMG_URL = "https://telegra.ph/file/1557a544d9b4f051f99c7-57891fa1d7578f5b79.jpg"
-TELEGRAM_AUDIO_URL = "https://files.catbox.moe/1xn73k.jpg"
-TELEGRAM_VIDEO_URL = "https://files.catbox.moe/1xn73k.jpg"
-STREAM_IMG_URL = "https://envs.sh/SnH.jpg"
-SOUNCLOUD_IMG_URL = "https://files.catbox.moe/1xn73k.jpg"
-YOUTUBE_IMG_URL = "https://files.catbox.moe/1xn73k.jpg"
-SPOTIFY_ARTIST_IMG_URL = "https://files.catbox.moe/1xn73k.jpg"
-SPOTIFY_ALBUM_IMG_URL = "https://files.catbox.moe/1xn73k.jpg"
-SPOTIFY_PLAYLIST_IMG_URL = "https://files.catbox.moe/1xn73k.jpg"
+PLAYLIST_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
+STATS_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
+TELEGRAM_AUDIO_URL = "https://files.catbox.moe/q9szy4.jpg"
+TELEGRAM_VIDEO_URL = "https://files.catbox.moe/q9szy4.jpg"
+STREAM_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
+SOUNCLOUD_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
+YOUTUBE_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
+SPOTIFY_ARTIST_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
+SPOTIFY_ALBUM_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
+SPOTIFY_PLAYLIST_IMG_URL = "https://files.catbox.moe/q9szy4.jpg"
 
 
 def time_to_seconds(time):
