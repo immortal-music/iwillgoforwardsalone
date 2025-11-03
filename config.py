@@ -14,8 +14,8 @@ API_HASH = getenv("API_HASH")
 BOT_TOKEN = getenv("BOT_TOKEN")
 
 #Get API_KEY from @DeadlineTechOwner or @DeadlineApiBot
-API_BASE_URL = getenv("API_BASE_URL", "http://deadlinetech.site")
-API_KEY = getenv("API_KEY")
+API_URL = getenv("API_URL", "https://api.thequickearn.xyz")
+API_KEY = getenv("API_KEY", "30DxNexGenBotsfcfad8")
 
 # Get your mongo url from cloud.mongodb.com
 MONGO_DB_URI = getenv("MONGO_DB_URI", None)
