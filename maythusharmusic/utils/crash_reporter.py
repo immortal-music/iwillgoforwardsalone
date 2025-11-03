@@ -1,0 +1,46 @@
+# Powered By maythusharmusic
+
+import asyncio
+from traceback import format_exc
+from pyrogram.errors import RPCError
+
+from maythusharmusic import app
+from maythusharmusic.misc import SUDOERS
+
+
+async def notify_sudoers_about_crash(error: Exception):
+    error_text = (
+        "🚨 <b><u>Bot Crash Alert</u></b>\n\n"
+        f"<b>Error:</b> <code>{str(error)}</code>\n\n"
+        f"<b>Traceback:</b>\n<pre>{format_exc()}</pre>"
+    )
+    for sudo_id in SUDOERS:
+        try:
+            await app.send_message(
+                chat_id=sudo_id,
+                text=error_text,
+                disable_web_page_preview=True
+            )
+        except RPCError:
+            continue
+
+
+def sudo_alert_on_crash(func):
+    async def wrapper(client, *args, **kwargs):
+        try:
+            return await func(client, *args, **kwargs)
+        except Exception as e:
+            await notify_sudoers_about_crash(e)
+            raise  # Optional: raise again for logging
+    return wrapper
+
+
+def setup_global_exception_handler():
+    loop = asyncio.get_event_loop()
+
+    def handle_exception(loop, context):
+        error = context.get("exception")
+        if error:
+            asyncio.create_task(notify_sudoers_about_crash(error))
+
+    loop.set_exception_handler(handle_exception)
