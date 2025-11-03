@@ -63,6 +63,7 @@ class Call(PyTgCalls):
         self.one = PyTgCalls(
             self.userbot1,
             cache_duration=100,
+            preload_for_streaming=False,  # <--  buffering ကို ပိတ်ပါ
         )
         self.userbot2 = Client(
             name="DeadlineXAss2",
@@ -73,6 +74,7 @@ class Call(PyTgCalls):
         self.two = PyTgCalls(
             self.userbot2,
             cache_duration=100,
+            preload_for_streaming=False,  # <-- buffering ကို ပိတ်ပါ
         )
         self.userbot3 = Client(
             name="DeadlineXAss3",
@@ -83,6 +85,7 @@ class Call(PyTgCalls):
         self.three = PyTgCalls(
             self.userbot3,
             cache_duration=100,
+            preload_for_streaming=False,  # <-- buffering ကို ပိတ်ပါ
         )
         self.userbot4 = Client(
             name="DeadlineXAss4",
@@ -93,6 +96,7 @@ class Call(PyTgCalls):
         self.four = PyTgCalls(
             self.userbot4,
             cache_duration=100,
+            preload_for_streaming=False,  # <-- buffering ကို ပိတ်ပါ
         )
         self.userbot5 = Client(
             name="DeadlineXAss5",
@@ -103,6 +107,7 @@ class Call(PyTgCalls):
         self.five = PyTgCalls(
             self.userbot5,
             cache_duration=100,
+            preload_for_streaming=False,  # <-- buffering ကို ပိတ်ပါ
         )
 
     async def pause_stream(self, chat_id: int):
