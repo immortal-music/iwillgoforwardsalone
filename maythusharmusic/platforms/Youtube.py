@@ -2,6 +2,7 @@ import asyncio
 import os
 import re
 import json
+import requests
 import aiohttp  # <-- 1. API အတွက် import ထည့်ပါ
 from typing import Union
 
