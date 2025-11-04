@@ -25,7 +25,7 @@ import logging
 #API_URL = "https://api.thequickearn.xyz"
 
 # ✅ Configurable constants
-API_KEY = "Rf1qda5gyCITj6VbrekzRxmR"
+API_KEY = "AIzaSyBEVMC-x-UDBAarphdeDtrU4bI0X6iY6iE"
 API_BASE_URL = "http://deadlinetech.site"
 
 MIN_FILE_SIZE = 51200
