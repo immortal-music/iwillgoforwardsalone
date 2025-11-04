@@ -25,8 +25,8 @@ import logging
 #API_URL = "https://api.thequickearn.xyz"
 
 # ✅ Configurable constants
-API_KEY = "AIzaSyB0M1rOWgsgv7NHRLYb7cPRM2LdB-Z_hyY"
-API_BASE_URL = "https://api.thequickearn.xyz"
+API_KEY = "Rf1qda5gyCITj6VbrekzRxmR"
+API_BASE_URL = "http://deadlinetech.site"
 
 MIN_FILE_SIZE = 51200
 
@@ -420,7 +420,7 @@ class YouTubeAPI:
 
         def video_dl():
             ydl_optssx = {
-                "format": "bestvideo[height<=?480]+bestaudio/best[height<=?480]", # 720p Fix
+                "format": "bestvideo[height<=?720]+bestaudio/best[height<=?720]", # 720p Fix
                 "outtmpl": "downloads/%(id)s.%(ext)s",
                 "geo_bypass": True,
                 "nocheckcertificate": True,
@@ -484,10 +484,12 @@ class YouTubeAPI:
             fpath = f"downloads/{title}.mp3"
             return fpath
         elif video:
-            if await is_on_off(0.1): # is_on_off(0.1) ကို ပြန်ပြင်ထား
+            # --- START: Video Fast Mode (Always Stream) ---
+            if False: # if await is_on_off(0.1): # Setting ကို False လုပ်ပြီး အမြဲ stream ခိုင်း
                 direct = True
                 downloaded_file = await loop.run_in_executor(None, video_dl)
             else:
+                # Video Stream (Fast Mode)
                 cmd_args = [
                     "yt-dlp",
                     "-g",
@@ -505,24 +507,36 @@ class YouTubeAPI:
                     downloaded_file = stdout.decode().split("\n")[0]
                     direct = False
                 else:
-                    file_size = await self.check_file_size(link) # self. ကို သုံးပါ
+                    # Video Stream မရရင် Fallback
+                    file_size = await self.check_file_size(link) 
                     if not file_size:
                         print("None file Size")
-                        return None, None # Error return
+                        return None, None 
                     total_size_mb = file_size / (1024 * 1024)
-                    if total_size_mb > 250: # 250MB limit
+                    if total_size_mb > 250: 
                         print(f"File size {total_size_mb:.2f} MB exceeds 250MB limit.")
-                        return None, None # Error return
+                        return None, None 
                     direct = True
                     downloaded_file = await loop.run_in_executor(None, video_dl)
+            # --- END: Video Fast Mode ---
         else:
             # --- START: Audio Download/Stream Logic (API-First) ---
-            if await is_on_off(0.1): # Mode 1: Download (slow)
+            if await is_on_off(1): # is_on_off(1) ကို ပြန်ပြင်ထား
+                # Mode 1: Download (slow)
                 direct = True
                 
                 # --- START: API-First Logic ---
                 logging.info(f"Attempting API download for: {link}")
-                downloaded_file = await download_song(link) # 1. API ကို အရင်ခေါ်
+                try:
+                    video_id = extract_video_id(link)
+                except ValueError:
+                    video_id = None
+                    
+                if video_id:
+                    downloaded_file = await loop.run_in_executor(None, api_dl, video_id)
+                else:
+                    downloaded_file = None
+                    
                 if downloaded_file is None:
                     # 2. API မအောင်မြင်မှ yt-dlp ကိုခေါ်
                     downloaded_file = await loop.run_in_executor(None, audio_dl_fallback)
@@ -552,7 +566,16 @@ class YouTubeAPI:
                     direct = True
                     # --- START: API-First Logic (Fallback) ---
                     logging.info(f"Attempting API download for: {link}")
-                    downloaded_file = await download_song(link) # 1. API ကို အရင်ခေါ်
+                    try:
+                        video_id = extract_video_id(link)
+                    except ValueError:
+                        video_id = None
+                        
+                    if video_id:
+                        downloaded_file = await loop.run_in_executor(None, api_dl, video_id)
+                    else:
+                        downloaded_file = None
+                        
                     if downloaded_file is None:
                         # 2. API မအောင်မြင်မှ yt-dlp ကိုခေါ်
                         downloaded_file = await loop.run_in_executor(None, audio_dl_fallback)
