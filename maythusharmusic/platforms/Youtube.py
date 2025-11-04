@@ -511,47 +511,35 @@ class YouTubeAPI:
                     direct = True
                     downloaded_file = await loop.run_in_executor(None, video_dl)
         else:
-            # --- START: Audio Download/Stream Logic (API-First) ---
-            if await is_on_off(0.1): # Mode 1: Download (slow)
+            # --- START: Always Fast Streaming Logic (No Toggle) ---
+            # Mode 2: Stream (fast) ကိုပဲ အမြဲတမ်း သုံးပါမယ်
+            direct = False
+            cmd_args = [
+                "yt-dlp",
+                "-g",
+                "-f",
+                "bestaudio[ext=m4a]/bestaudio/best",
+            ] + self.cookie_arg + [f"{link}"]
+            
+            proc = await asyncio.create_subprocess_exec(
+                *cmd_args,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+            if stdout:
+                downloaded_file = stdout.decode().split("\n")[0]
+            else:
+                # Stream မရရင် Download mode (API-First) ကို ပြန်ခေါ်
+                logging.warning(f"Streaming failed for {link}, falling back to download...")
                 direct = True
-                
-                # --- START: API-First Logic ---
+                # --- START: API-First Logic (Fallback) ---
                 logging.info(f"Attempting API download for: {link}")
                 downloaded_file = await download_song(link) # 1. API ကို အရင်ခေါ်
                 if downloaded_file is None:
                     # 2. API မအောင်မြင်မှ yt-dlp ကိုခေါ်
                     downloaded_file = await loop.run_in_executor(None, audio_dl_fallback)
-                # --- END: API-First Logic ---
-                
-            else:
-                # Mode 2: Stream (fast) - yt-dlp only
-                direct = False
-                cmd_args = [
-                    "yt-dlp",
-                    "-g",
-                    "-f",
-                    "bestaudio[ext=m4a]/bestaudio/best",
-                ] + self.cookie_arg + [f"{link}"]
-                
-                proc = await asyncio.create_subprocess_exec(
-                    *cmd_args,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-                stdout, stderr = await proc.communicate()
-                if stdout:
-                    downloaded_file = stdout.decode().split("\n")[0]
-                else:
-                    # Stream မရရင် Download mode (API-First) ကို ပြန်ခေါ်
-                    logging.warning(f"Streaming failed for {link}, falling back to download...")
-                    direct = True
-                    # --- START: API-First Logic (Fallback) ---
-                    logging.info(f"Attempting API download for: {link}")
-                    downloaded_file = await download_song(link) # 1. API ကို အရင်ခေါ်
-                    if downloaded_file is None:
-                        # 2. API မအောင်မြင်မှ yt-dlp ကိုခေါ်
-                        downloaded_file = await loop.run_in_executor(None, audio_dl_fallback)
-                    # --- END: API-First Logic (Fallback) ---
-            # --- END: Audio Download/Stream Logic ---
+                # --- END: API-First Logic (Fallback) ---
+            # --- END: Always Fast Streaming Logic ---
             
         return downloaded_file, direct
