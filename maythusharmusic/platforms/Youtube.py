@@ -16,10 +16,12 @@ from maythusharmusic.utils.formatters import time_to_seconds
 import glob
 import random
 import logging
+import config
+from config import API_URL, API_KEY
 
 # --- START: API Download Function ---
-API_KEY = "30DxNexGenBotsfcfad8"
-API_URL = "https://api.thequickearn.xyz"
+#API_KEY = "30DxNexGenBotsfcfad8"
+#API_URL = "https://api.thequickearn.xyz"
 
 async def download_song(link: str):
     video_id = link.split('v=')[-1].split('&')[0]
