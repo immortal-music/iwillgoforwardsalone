@@ -2,7 +2,6 @@ import asyncio
 import os
 import re
 import json
-import requests
 import aiohttp  # <-- 1. API အတွက် import ထည့်ပါ
 from typing import Union
 
@@ -479,7 +478,8 @@ class YouTubeAPI:
             fpath = f"downloads/{title}.mp3"
             return fpath
         elif video:
-                direct = False
+            if await is_on_off(0.1): # is_on_off(0.1) ကို ပြန်ပြင်ထား
+                direct = True
                 downloaded_file = await loop.run_in_executor(None, video_dl)
             else:
                 cmd_args = [
@@ -509,36 +509,48 @@ class YouTubeAPI:
                         return None, None # Error return
                     direct = True
                     downloaded_file = await loop.run_in_executor(None, video_dl)
-         else:
-            # --- START: Always Fast Streaming Logic (No Toggle) ---
-            # Mode 2: Stream (fast) ကိုပဲ အမြဲတမ်း သုံးပါမယ်
-            direct = False
-            cmd_args = [
-                "yt-dlp",
-                "-g",
-                "-f",
-                "bestaudio[ext=m4a]/bestaudio/best",
-            ] + self.cookie_arg + [f"{link}"]
-            
-            proc = await asyncio.create_subprocess_exec(
-                *cmd_args,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await proc.communicate()
-            if stdout:
-                downloaded_file = stdout.decode().split("\n")[0]
-            else:
-                # Stream မရရင် Download mode (API-First) ကို ပြန်ခေါ်
-                logging.warning(f"Streaming failed for {link}, falling back to download...")
-                direct = True
-                # --- START: API-First Logic (Fallback) ---
+        else:
+            # --- START: Audio Download/Stream Logic (API-First) ---
+            if await is_on_off(0.1): # Mode 1: Download (slow)
+                direct = False
+                
+                # --- START: API-First Logic ---
                 logging.info(f"Attempting API download for: {link}")
                 downloaded_file = await download_song(link) # 1. API ကို အရင်ခေါ်
                 if downloaded_file is None:
                     # 2. API မအောင်မြင်မှ yt-dlp ကိုခေါ်
                     downloaded_file = await loop.run_in_executor(None, audio_dl_fallback)
-                # --- END: API-First Logic (Fallback) ---
-            # --- END: Always Fast Streaming Logic ---
+                # --- END: API-First Logic ---
+                
+            else:
+                # Mode 2: Stream (fast) - yt-dlp only
+                direct = True
+                cmd_args = [
+                    "yt-dlp",
+                    "-g",
+                    "-f",
+                    "bestaudio[ext=m4a]/bestaudio/best",
+                ] + self.cookie_arg + [f"{link}"]
+                
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd_args,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                stdout, stderr = await proc.communicate()
+                if stdout:
+                    downloaded_file = stdout.decode().split("\n")[0]
+                else:
+                    # Stream မရရင် Download mode (API-First) ကို ပြန်ခေါ်
+                    logging.warning(f"Streaming failed for {link}, falling back to download...")
+                    direct = True
+                    # --- START: API-First Logic (Fallback) ---
+                    logging.info(f"Attempting API download for: {link}")
+                    downloaded_file = await download_song(link) # 1. API ကို အရင်ခေါ်
+                    if downloaded_file is None:
+                        # 2. API မအောင်မြင်မှ yt-dlp ကိုခေါ်
+                        downloaded_file = await loop.run_in_executor(None, audio_dl_fallback)
+                    # --- END: API-First Logic (Fallback) ---
+            # --- END: Audio Download/Stream Logic ---
             
         return downloaded_file, direct
