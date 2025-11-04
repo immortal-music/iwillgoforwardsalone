@@ -478,7 +478,7 @@ class YouTubeAPI:
             await loop.run_in_executor(None, song_audio_dl)
             fpath = f"downloads/{title}.mp3"
             return fpath
-      elif video:
+        elif video:
                 direct = False
                 downloaded_file = await loop.run_in_executor(None, video_dl)
             else:
@@ -509,7 +509,7 @@ class YouTubeAPI:
                         return None, None # Error return
                     direct = True
                     downloaded_file = await loop.run_in_executor(None, video_dl)
-        else:
+         else:
             # --- START: Always Fast Streaming Logic (No Toggle) ---
             # Mode 2: Stream (fast) ကိုပဲ အမြဲတမ်း သုံးပါမယ်
             direct = False
