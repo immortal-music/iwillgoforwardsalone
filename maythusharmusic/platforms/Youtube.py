@@ -478,9 +478,8 @@ class YouTubeAPI:
             await loop.run_in_executor(None, song_audio_dl)
             fpath = f"downloads/{title}.mp3"
             return fpath
-        elif video:
-            if await is_on_off(0.1): # is_on_off(0.1) ကို ပြန်ပြင်ထား
-                direct = True
+      elif video:
+                direct = False
                 downloaded_file = await loop.run_in_executor(None, video_dl)
             else:
                 cmd_args = [
