@@ -26,7 +26,7 @@ import logging
 
 # ✅ Configurable constants
 API_KEY = "AIzaSyBEVMC-x-UDBAarphdeDtrU4bI0X6iY6iE"
-API_BASE_URL = "http://deadlinetech.site"
+API_BASE_URL = "https://www.youtube.com"
 
 MIN_FILE_SIZE = 51200
 
