@@ -20,8 +20,8 @@ import time
 
 
 # ✅ Configurable constants
-API_KEY = "AIzaSyBEVMC-x-UDBAarphdeDtrU4bI0X6iY6iE"
-API_BASE_URL = "http://www.youtube.com"
+API_KEY = "VNI0X_eAnzJuM9kfjHaMA"
+API_BASE_URL = "https://api.vniox.store"
 
 MIN_FILE_SIZE = 51200
 
